@@ -208,5 +208,15 @@ public class FirebaseButton : MonoBehaviour
           });
     }
 
+    public void StartRecord() {
+        text.text = "Microphones: ";
+        audioSource.clip = Microphone.Start(null, false, 10, 44100);
+        foreach (var device in Microphone.devices)
+        {
+            //Debug.Log("Name: " + device);
+            text.text = text.text + device;
+        }
+
+    }
 
 }

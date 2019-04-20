@@ -323,7 +323,7 @@ MonoBehaviour:
   audioClipFromDB: {fileID: 8300000, guid: 1b1cf13f5ed0847048122843be110c92, type: 3}
   text: {fileID: 1033357040}
   uploading: {fileID: 210256591}
-  downloading: {fileID: 0}
+  downloading: {fileID: 1694059623}
 --- !u!1001 &732595306
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1471,7 +1471,18 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1977837907}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 560647734}
+        m_MethodName: StartRecord
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
     m_TypeName: UnityEngine.UI.Button+ButtonClickedEvent, UnityEngine.UI, Version=1.0.0.0,
       Culture=neutral, PublicKeyToken=null
 --- !u!114 &1977837907

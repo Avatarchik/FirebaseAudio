@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>546284737499-jv2g35m7u386vejatb6jrvlofsdgjpmp.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.546284737499-jv2g35m7u386vejatb6jrvlofsdgjpmp</string>
+	<key>API_KEY</key>
+	<string>AIzaSyBWmlCL4Y6nmz4ktr6uuvtuKfSYXCkPN7M</string>
+	<key>GCM_SENDER_ID</key>
+	<string>546284737499</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.VRAB.ImmersiveTheatre</string>
+	<key>PROJECT_ID</key>
+	<string>reflections-51bdd</string>
+	<key>STORAGE_BUCKET</key>
+	<string>reflections-51bdd.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:546284737499:ios:9341849872321681</string>
+	<key>DATABASE_URL</key>
+	<string>https://reflections-51bdd.firebaseio.com</string>
+</dict>
+</plist>

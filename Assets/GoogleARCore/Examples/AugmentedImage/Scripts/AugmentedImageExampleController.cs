@@ -60,6 +60,11 @@ namespace GoogleARCore.Examples.AugmentedImage
         private bool first = true;
         private DatabaseReference reference;
         private FirebaseStorage storage;
+        private StorageReference storage_ref;
+        private bool[] updating = new bool[10];
+        //private StorageReference audio_ref;
+        private List<float[]> positionsListUpdating = new List<float[]>();
+        private List<GameObject> Spheres = new List<GameObject>();
 
         public void Start()
         {
@@ -81,6 +86,16 @@ namespace GoogleARCore.Examples.AugmentedImage
                     // Firebase Unity SDK is not safe to use here.
                 }
             });
+
+            FirebaseApp.DefaultInstance.SetEditorDatabaseUrl("https://reflections-51bdd.firebaseio.com/");
+            // Get the root reference location of the database.
+            reference = FirebaseDatabase.DefaultInstance.RootReference;
+            storage = FirebaseStorage.DefaultInstance;
+            storage_ref = storage.GetReferenceFromUrl("gs://reflections-51bdd.appspot.com");
+            //audio_ref = storage_ref.Child("audioTest");
+            for (int i = 0; i < 10; i++) {
+                updating[i] = false;
+            }
         }
 
 
@@ -89,11 +104,6 @@ namespace GoogleARCore.Examples.AugmentedImage
         /// </summary>
         public void Update()
         {
-            //Debug.Log("=========Script Loaded");
-            storage = FirebaseStorage.DefaultInstance;
-            //Debug.Log("=========Script Loaded");
-            StorageReference storage_ref = storage.GetReferenceFromUrl("gs://reflections-51bdd.appspot.com");
-            //Debug.Log("=========Script Loaded");
 
             // Exit the app when the 'back' button is pressed.
             if (Input.GetKey(KeyCode.Escape))
@@ -113,27 +123,78 @@ namespace GoogleARCore.Examples.AugmentedImage
 
             // Create visualizers and anchors for updated augmented images that are tracking and do
             // not previously have a visualizer. Remove visualizers for stopped images.
+            int i = 0;
             foreach (var image in m_TempAugmentedImages)
             {
+
                 AugmentedImageVisualizer visualizer = null;
+                AugmentedImageVisualizer visualizer2 = null;
+                AugmentedImageVisualizer visualizer3 = null;
+                //Camera.current;
                 m_Visualizers.TryGetValue(image.DatabaseIndex, out visualizer);
                 if (image.TrackingState == TrackingState.Tracking && visualizer == null)
                 {
                     // Create an anchor to ensure that ARCore keeps tracking this augmented image.
+                    float halfWidth = image.ExtentX / 2;
+                    float halfHeight = image.ExtentZ / 2;
                     Anchor anchor = image.CreateAnchor(image.CenterPose);
+
                     visualizer = (AugmentedImageVisualizer)Instantiate(
                         AugmentedImageVisualizerPrefab, anchor.transform);
                     visualizer.Image = image;
+                    visualizer.position = new float[] { 0.1f, 0.1f, 0.1f };
+                    visualizer.text = text;
+                    visualizer.positionsList = positionsListUpdating;
+                    visualizer.
+                    List<float[]> positionsList = new List<float[]>();
                     visualizer.MusicClip = MusicClip;
                     m_Visualizers.Add(image.DatabaseIndex, visualizer);
+
+                    // You can convert it back to an array if you would like to
+
+
+                    FirebaseDatabase.DefaultInstance
+                      .GetReference("audio")
+                      .GetValueAsync().ContinueWith(task => {
+                          if (task.IsFaulted)
+                          {
+                              // Handle the error...
+                          }
+                          else if (task.IsCompleted)
+                          {
+                              DataSnapshot snapshot = task.Result;
+                              foreach (DataSnapshot c in snapshot.Children)
+                              {
+                                  
+                                  long value0 = (long) c.Child("0").Value;
+                                  long value1 = (long) c.Child("1").Value;
+                                  long value2 = (long) c.Child("2").Value;
+                                  positionsListUpdating.Add(new float[] { (float) value0, (float) value1, (float) value2 });                                                                
+                              }
+                              updating[i] = true;
+                          }
+                      });
+                    visualizer.positionsList = positionsListUpdating;
+                    visualizer.numAudio = positionsListUpdating.Count;
+                    //visualizer.Play();
+                    /*
+                    if (updating[i]) {
+
+                        updating[i] = false;
+                    }
+                    */
+
+
+                    /*
+
+                    */
+
+                    //int[] terms = termsList.ToArray();
 
                     //if (first)
                     //{
                     // Set this before calling into the realtime database.
-                    FirebaseApp.DefaultInstance.SetEditorDatabaseUrl("https://reflections-51bdd.firebaseio.com/");
-                    // Get the root reference location of the database.
-                    reference = FirebaseDatabase.DefaultInstance.RootReference;
-                    storage = FirebaseStorage.DefaultInstance;
+
                     text.text = "hi";
 
                     //string json = JsonUtility.ToJson(MusicClip);
@@ -180,10 +241,10 @@ namespace GoogleARCore.Examples.AugmentedImage
                     text.text = text.text + " hello";
                     // Get a reference to the storage service, using the default Firebase App
                     storage = FirebaseStorage.DefaultInstance;
-                    visualizer.Play();
+                    //visualizer.Play();
                     //StorageReference storage_ref = storage.GetReferenceFromUrl("gs://reflections-51bdd");
 
-                    StorageReference new_ref = storage_ref.Child(key);
+                    //StorageReference new_ref = storage_ref.Child(key);
 
                     first = false;
                         
@@ -194,8 +255,8 @@ namespace GoogleARCore.Examples.AugmentedImage
                     m_Visualizers.Remove(image.DatabaseIndex);
                     GameObject.Destroy(visualizer.gameObject);
                 }
+                i++;
             }
-
             // Show the fit-to-scan overlay if there are no images that are Tracking.
             foreach (var visualizer in m_Visualizers.Values)
             {

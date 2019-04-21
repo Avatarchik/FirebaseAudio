@@ -7,6 +7,7 @@ using Firebase.Storage;
 using Firebase.Unity.Editor;
 using System.Threading.Tasks;
 using UnityEngine.UI;
+using GoogleARCore;
 
 public class FirebaseButton : MonoBehaviour
 {
@@ -19,7 +20,7 @@ public class FirebaseButton : MonoBehaviour
     public Text downloading;
     private DatabaseReference reference;
     private FirebaseStorage storage;
-    private StorageReference new_ref;
+    private StorageReference audio_ref;
     private StorageReference storage_ref;
     private float[] floatFileContents;
     private bool updating = false;
@@ -42,7 +43,7 @@ public class FirebaseButton : MonoBehaviour
 
         storage = FirebaseStorage.DefaultInstance;
         storage_ref = storage.GetReferenceFromUrl("gs://reflections-51bdd.appspot.com");
-        new_ref = storage_ref.Child("audioTest");
+        audio_ref = storage_ref.Child("audioTest");
     }
 
     // Update is called once per frame
@@ -61,7 +62,7 @@ public class FirebaseButton : MonoBehaviour
         byte[] byteSamples = new byte[audioClipFromDB.samples * 4];
 
         System.Buffer.BlockCopy(samples, 0, byteSamples, 0, byteSamples.Length);
-        new_ref.PutBytesAsync(byteSamples)
+        audio_ref.PutBytesAsync(byteSamples)
           .ContinueWith((Task<StorageMetadata> task) => {
               if (task.IsFaulted || task.IsCanceled)
               {
@@ -94,7 +95,7 @@ public class FirebaseButton : MonoBehaviour
         byte[] fileContents = { };
         const long maxAllowedSize = 34008512;
 
-        new_ref.GetBytesAsync(maxAllowedSize).ContinueWith((Task<byte[]> task) => {
+        audio_ref.GetBytesAsync(maxAllowedSize).ContinueWith((Task<byte[]> task) => {
             if (task.IsFaulted || task.IsCanceled)
             {
                 Debug.Log("Downloading Failed");
@@ -169,17 +170,23 @@ public class FirebaseButton : MonoBehaviour
     } 
 
     public void PushDatabase() {
+        key = reference.Child("image1").Push().Key;
+        reference.Child("image1").Child(key).SetValueAsync(new float[] {0, 0, 0});
 
+        key = reference.Child("image1").Push().Key;
+        reference.Child("image1").Child(key).SetValueAsync(new float[] { 0.1f, 0, 0 });
 
-        key = reference.Child("audio").Push().Key;
-        reference.Child("audio").Child(key).SetValueAsync(key);
+        key = reference.Child("image1").Push().Key;
+        reference.Child("image1").Child(key).SetValueAsync(new float[] { 0, 0.1f, 0 });
 
+        key = reference.Child("image1").Push().Key;
+        reference.Child("image1").Child(key).SetValueAsync(new float[] { 0, 0, 0.1f });
     }
 
     public void PullDatabase() {
         //reference.Child("hi").Child("AudioList").SetValueAsync(AudioList);
         FirebaseDatabase.DefaultInstance
-          .GetReference("audio")
+          .GetReference("image1")
           .GetValueAsync().ContinueWith(task => {
               if (task.IsFaulted)
               {
@@ -187,22 +194,19 @@ public class FirebaseButton : MonoBehaviour
               }
               else if (task.IsCompleted)
               {
-                  reference.Child("audio").Child("sup").SetValueAsync("nlsfklf");
                   DataSnapshot snapshot = task.Result;
-                  reference.Child("audio").Child("hey").SetValueAsync("new");
                   DataSnapshot child = snapshot.Child(key);
-                  reference.Child("audio").Child("hello").SetValueAsync("new");
-                  reference.Child("audio").Child("why").SetValueAsync(child.Key);
-                  reference.Child("audio").Child("lkhkgf").SetValueAsync(snapshot.Key);
-                  reference.Child("audio").Child("hasChildren").SetValueAsync(snapshot.HasChildren);
-                  reference.Child("audio").Child("childHasChildren").SetValueAsync(child.HasChildren);
-                  reference.Child("audio").Child("ChildrenCount").SetValueAsync(snapshot.ChildrenCount);
-                  //string s1;
                   foreach (DataSnapshot c in snapshot.Children)
                   {
-                      text.text = text.text + c.Key + ", ";
-                      //s1 = c.Key;
-                      //reference.Child("audio").Child(s1).SetValueAsync("updated");
+
+
+                      long value0 = (long) c.Child("0").Value;
+                      long value1 = (long) c.Child("1").Value;
+                      long value2 = (long) c.Child("2").Value;
+                      float float0 = (float) value0;
+                      Debug.Log(float0);
+                      //text.text += ", " + value0;
+                      
                   }
               }
           });

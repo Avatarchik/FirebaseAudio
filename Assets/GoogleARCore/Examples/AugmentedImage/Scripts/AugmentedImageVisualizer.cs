@@ -40,6 +40,7 @@ namespace GoogleARCore.Examples.AugmentedImage
     using GoogleARCore;
     using GoogleARCoreInternal;
     using UnityEngine;
+    using UnityEngine.UI;
 
     /// <summary>
     /// Uses 4 frame corner objects to visualize an AugmentedImage.
@@ -58,6 +59,13 @@ namespace GoogleARCore.Examples.AugmentedImage
 
         public AudioClip MusicClip;
         public AudioSource MusicSource;
+        public float[] position = new float[] { 0, 0, 0 };
+        public bool first = false;
+        public int numAudio;
+        public List<GameObject> Spheres;
+        private Anchor anchor;
+        public List<float[]> positionsList;
+        public Text text;
 
 
 
@@ -65,6 +73,34 @@ namespace GoogleARCore.Examples.AugmentedImage
         /// The Unity Update method.
         /// </summary>
 
+        public void Start()
+        {
+            anchor = Image.CreateAnchor(Image.CenterPose);
+            float x = 0.2f;
+            float y = 0.2f;
+            float z = 0.2f;
+            for (int i = 0; i < 3; i++) {
+                /*
+                GameObject s = (GameObject)Instantiate(Sphere, anchor.transform);
+                s.transform.localPosition =
+                          (positionsList[i][0] * Vector3.right) + (positionsList[i][1] * Vector3.forward) +
+                          (positionsList[i][2] * Vector3.down);
+                s.SetActive(true);
+                */
+
+                GameObject s2 = (GameObject)Instantiate(Sphere, anchor.transform);
+                s2.transform.localPosition =
+                          (x * Vector3.right) + (y * Vector3.forward) +
+                          (z * Vector3.down);
+                x += 0.1f;
+                y += 0.1f;
+                z += 0.1f;
+                s2.SetActive(true);
+                Spheres.Add(s2);
+            }
+            text.text += "hehe ";
+
+        }
 
 
         public void Update()
@@ -74,12 +110,59 @@ namespace GoogleARCore.Examples.AugmentedImage
                 Sphere.SetActive(false);
                 return;
             }
-            float halfWidth = Image.ExtentX / 2;
-            float halfHeight = Image.ExtentZ / 2;
-            Sphere.transform.localPosition =
+
+            /*
+            for (int i = 0; i < numAudio; i++)
+            {
+                GameObject s = (GameObject)Instantiate(Sphere, anchor.transform);
+                s.transform.localPosition =
+                          (positionsList[i][0] * Vector3.right) + (positionsList[i][1] * Vector3.forward) +
+                          (positionsList[i][2] * Vector3.down);
+                s.SetActive(true);
+                GameObject s2 = (GameObject)Instantiate(Sphere, anchor.transform);
+                s.transform.localPosition =
+                          (x * Vector3.right) + (y * Vector3.forward) +
+                          (z * Vector3.down);
+                x += 0.1f;
+                y += 0.1f;
+                z += 0.1f;
+                s.SetActive(true);
+                Spheres.Add(s);
+            }
+            */
+
+            /*
+
+            */
+            /*
+            float halfWidth = 0;
+            float halfHeight = 0;
+            float halfDepth = 0;
+            */
+
+            /*
+            foreach (GameObject s in Spheres) {
+
+            }
+            */
+
+
+            /*
+            if (first) {
+                Sphere.transform.localPosition =
                 (halfWidth * Vector3.left) + (halfHeight * Vector3.back);
+            } else {
+
+            }
+            */
+
+            Sphere.transform.localPosition =
+                      (0.1f * Vector3.left) + (0.1f * Vector3.forward) +
+                      (0.1f * Vector3.down);
 
             Sphere.SetActive(true);
+            text.text += positionsList.Count;
+           
 
         }
 

@@ -51,20 +51,22 @@ namespace GoogleARCore.Examples.AugmentedImage
         public AudioClip MusicClip;
         public AudioClip upload;
         public Text text;
+        public Text imageText;
 
         private Dictionary<int, AugmentedImageVisualizer> m_Visualizers
             = new Dictionary<int, AugmentedImageVisualizer>();
 
         private List<AugmentedImage> m_TempAugmentedImages = new List<AugmentedImage>();
+        private List<AugmentedImage> m_AllAugmentedImages = new List<AugmentedImage>();
 
-        private bool first = true;
         private DatabaseReference reference;
         private FirebaseStorage storage;
         private StorageReference storage_ref;
         private bool[] updating = new bool[10];
         //private StorageReference audio_ref;
-        private List<float[]> positionsListUpdating = new List<float[]>();
-        private List<GameObject> Spheres = new List<GameObject>();
+        private List<float[]> positionsList = new List<float[]>();
+        private List<GameObject> spheresList = new List<GameObject>();
+        private string curr = "";
 
         public void Start()
         {
@@ -123,15 +125,15 @@ namespace GoogleARCore.Examples.AugmentedImage
 
             // Create visualizers and anchors for updated augmented images that are tracking and do
             // not previously have a visualizer. Remove visualizers for stopped images.
-            int i = 0;
             foreach (var image in m_TempAugmentedImages)
             {
 
                 AugmentedImageVisualizer visualizer = null;
-                AugmentedImageVisualizer visualizer2 = null;
-                AugmentedImageVisualizer visualizer3 = null;
                 //Camera.current;
                 m_Visualizers.TryGetValue(image.DatabaseIndex, out visualizer);
+                if (image.TrackingState == TrackingState.Tracking) {
+
+                }
                 if (image.TrackingState == TrackingState.Tracking && visualizer == null)
                 {
                     // Create an anchor to ensure that ARCore keeps tracking this augmented image.
@@ -144,11 +146,13 @@ namespace GoogleARCore.Examples.AugmentedImage
                     visualizer.Image = image;
                     visualizer.position = new float[] { 0.1f, 0.1f, 0.1f };
                     visualizer.text = text;
-                    visualizer.positionsList = positionsListUpdating;
-                    visualizer.
-                    List<float[]> positionsList = new List<float[]>();
+                    visualizer.positionsList = positionsList;
+                    visualizer.spheresList = spheresList;
                     visualizer.MusicClip = MusicClip;
                     m_Visualizers.Add(image.DatabaseIndex, visualizer);
+                    if (curr != image.Name) {
+                        visualizer.Destroy();
+                    }
 
                     // You can convert it back to an array if you would like to
 
@@ -165,97 +169,32 @@ namespace GoogleARCore.Examples.AugmentedImage
                               DataSnapshot snapshot = task.Result;
                               foreach (DataSnapshot c in snapshot.Children)
                               {
-                                  
-                                  long value0 = (long) c.Child("0").Value;
-                                  long value1 = (long) c.Child("1").Value;
-                                  long value2 = (long) c.Child("2").Value;
-                                  positionsListUpdating.Add(new float[] { (float) value0, (float) value1, (float) value2 });                                                                
-                              }
-                              updating[i] = true;
-                          }
-                      });
-                    visualizer.positionsList = positionsListUpdating;
-                    visualizer.numAudio = positionsListUpdating.Count;
-                    //visualizer.Play();
-                    /*
-                    if (updating[i]) {
-
-                        updating[i] = false;
-                    }
-                    */
-
-
-                    /*
-
-                    */
-
-                    //int[] terms = termsList.ToArray();
-
-                    //if (first)
-                    //{
-                    // Set this before calling into the realtime database.
-
-                    text.text = "hi";
-
-                    //string json = JsonUtility.ToJson(MusicClip);
-
-
-                    string key = reference.Child("hi").Push().Key;
-                    string key1 = reference.Child("hi").Push().Key;
-                    string key2 = reference.Child("hi").Push().Key;
-                    reference.Child("hi").Child(key).SetValueAsync(key);
-                    reference.Child("hi").Child(key1).SetValueAsync(key1);
-                    reference.Child("hi").Child(key2).SetValueAsync(key2);
-
-                    //reference.Child("hi").Child("AudioList").SetValueAsync(AudioList);
-                    FirebaseDatabase.DefaultInstance
-                      .GetReference("hi")
-                      .GetValueAsync().ContinueWith(task => {
-                          if (task.IsFaulted)
-                          {
-                              // Handle the error...
-                          }
-                          else if (task.IsCompleted)
-                          {
-                              reference.Child("hi").Child("sup").SetValueAsync("new");
-                              DataSnapshot snapshot = task.Result;
-                              reference.Child("hi").Child("hey").SetValueAsync("new");
-                              DataSnapshot child = snapshot.Child(key);
-                              reference.Child("hi").Child("hello").SetValueAsync("new");
-                              string s0 = child.GetRawJsonValue();
-                              reference.Child("hi").Child("wha").SetValueAsync(s0);
-                              reference.Child("hi").Child("why").SetValueAsync(child.Key);
-                              string s1;
-                              foreach (DataSnapshot c in snapshot.Children) {
-                                  s1 = c.Key;
-                                  reference.Child("hi").Child(s1).SetValueAsync("updated");
+                                  double value0 = (double) c.Child("0").Value;
+                                  double value1 = (double) c.Child("1").Value;
+                                  double value2 = (double) c.Child("2").Value;
+                                  positionsList.Add(new float[] { (float) value0, (float) value1, (float) value2 }); 
                               }
                           }
                       });
+                    curr = image.Name;
+                    text.text = "hello";
+                    imageText.text = "image" + image.Name;
 
-                    text.text = text.text + " hello";
+                    //text.text = text.text + " hello";
                     foreach (var device in Microphone.devices)
                     {
                         text.text = text.text + " " + device; 
                     }
-                    text.text = text.text + " hello";
-                    // Get a reference to the storage service, using the default Firebase App
-                    storage = FirebaseStorage.DefaultInstance;
-                    //visualizer.Play();
-                    //StorageReference storage_ref = storage.GetReferenceFromUrl("gs://reflections-51bdd");
 
-                    //StorageReference new_ref = storage_ref.Child(key);
-
-                    first = false;
-                        
                     //}
+
+
                 }
                 else if (image.TrackingState == TrackingState.Stopped && visualizer != null)
                 {
                     m_Visualizers.Remove(image.DatabaseIndex);
                     GameObject.Destroy(visualizer.gameObject);
                 }
-                i++;
             }
             // Show the fit-to-scan overlay if there are no images that are Tracking.
             foreach (var visualizer in m_Visualizers.Values)

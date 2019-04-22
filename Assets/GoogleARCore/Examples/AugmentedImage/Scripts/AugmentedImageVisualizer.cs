@@ -61,8 +61,7 @@ namespace GoogleARCore.Examples.AugmentedImage
         public AudioSource MusicSource;
         public float[] position = new float[] { 0, 0, 0 };
         public bool first = false;
-        public int numAudio;
-        public List<GameObject> Spheres;
+        public List<GameObject> spheresList;
         private Anchor anchor;
         public List<float[]> positionsList;
         public Text text;
@@ -79,6 +78,7 @@ namespace GoogleARCore.Examples.AugmentedImage
             float x = 0.2f;
             float y = 0.2f;
             float z = 0.2f;
+            //Destroy(Sphere);
             for (int i = 0; i < 3; i++) {
                 /*
                 GameObject s = (GameObject)Instantiate(Sphere, anchor.transform);
@@ -96,7 +96,8 @@ namespace GoogleARCore.Examples.AugmentedImage
                 y += 0.1f;
                 z += 0.1f;
                 s2.SetActive(true);
-                Spheres.Add(s2);
+                spheresList.Add(s2);
+
             }
             text.text += "hehe ";
 
@@ -107,69 +108,51 @@ namespace GoogleARCore.Examples.AugmentedImage
         {
             if (Image == null || Image.TrackingState != TrackingState.Tracking)
             {
-                Sphere.SetActive(false);
+                //Sphere.SetActive(false);
                 return;
             }
+            int sCount = spheresList.Count;
+            int pCount = positionsList.Count;
 
-            /*
-            for (int i = 0; i < numAudio; i++)
+            if (sCount - 3 < pCount) 
             {
-                GameObject s = (GameObject)Instantiate(Sphere, anchor.transform);
-                s.transform.localPosition =
-                          (positionsList[i][0] * Vector3.right) + (positionsList[i][1] * Vector3.forward) +
-                          (positionsList[i][2] * Vector3.down);
-                s.SetActive(true);
-                GameObject s2 = (GameObject)Instantiate(Sphere, anchor.transform);
-                s.transform.localPosition =
-                          (x * Vector3.right) + (y * Vector3.forward) +
-                          (z * Vector3.down);
-                x += 0.1f;
-                y += 0.1f;
-                z += 0.1f;
-                s.SetActive(true);
-                Spheres.Add(s);
-            }
-            */
+                text.text = "true";
 
-            /*
-
-            */
-            /*
-            float halfWidth = 0;
-            float halfHeight = 0;
-            float halfDepth = 0;
-            */
-
-            /*
-            foreach (GameObject s in Spheres) {
+                for (int i = sCount - 3; i < pCount; i++) 
+                {
+                    GameObject s = (GameObject)Instantiate(Sphere, anchor.transform);
+                    s.transform.localPosition =
+                              (positionsList[i][0] * Vector3.right) + (positionsList[i][1] * Vector3.forward) +
+                              (positionsList[i][2] * Vector3.down);
+                    spheresList.Add(s);
+                    s.SetActive(true);
+                }
 
             }
-            */
-
-
-            /*
-            if (first) {
-                Sphere.transform.localPosition =
-                (halfWidth * Vector3.left) + (halfHeight * Vector3.back);
-            } else {
-
-            }
-            */
 
             Sphere.transform.localPosition =
-                      (0.1f * Vector3.left) + (0.1f * Vector3.forward) +
-                      (0.1f * Vector3.down);
+                      (1 * Vector3.left) + (1 * Vector3.forward) +
+                      (1 * Vector3.down);
 
-            Sphere.SetActive(true);
-            text.text += positionsList.Count;
+            Sphere.SetActive(false);
+
+            text.text = positionsList[0][0] + "" + positionsList[0][1] + "" + positionsList[0][2] + "" + positionsList.Count + ", " + spheresList.Count;
            
 
         }
 
+        public void Destroy()
+        {
+            foreach (GameObject s in spheresList) {
+                Destroy(s);
+            }
+            //spheresList.RemoveRange(0, spheresList.Count);
+        }
+
         public void Play()
         {
-            MusicSource.clip = MusicClip;
-            MusicSource.Play();
+            //MusicSource.clip = MusicClip;
+            //MusicSource.Play();
         }
     }
 }

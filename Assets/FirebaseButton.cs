@@ -18,13 +18,18 @@ public class FirebaseButton : MonoBehaviour
     public Text text;
     public Text uploading;
     public Text downloading;
+    public Text imageText;
+    public Text dataText;
+
     private DatabaseReference reference;
     private FirebaseStorage storage;
     private StorageReference audio_ref;
     private StorageReference storage_ref;
     private float[] floatFileContents;
     private bool updating = false;
-    private string key = "default";
+    private List<float[]> positionsList = new List<float[]>();
+    private List<string> keysList = new List<string>();
+    private string error = "";
 
 
 
@@ -49,13 +54,21 @@ public class FirebaseButton : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-    
+        if (updating) {
+            dataText.text += error;
+            for (int i = 0; i < keysList.Count; i++) {
+                dataText.text += " " + keysList[i] + ": ";
+                dataText.text += positionsList[i][0] + ", " + positionsList[i][1] + ", " + positionsList[i][2];
+            }
+            updating = false;
+        }
+
     }
 
-    public void testFirebase()
+    public void testFirebase(string key)
     {
-
         //Using the Buffer solution
+        audio_ref = storage_ref.Child(key);
         uploading.text = "Uploading";
         float[] samples = new float[audioClipFromDB.samples];
         audioClipFromDB.GetData(samples, 0);
@@ -170,46 +183,51 @@ public class FirebaseButton : MonoBehaviour
     } 
 
     public void PushDatabase() {
-        key = reference.Child("image1").Push().Key;
-        reference.Child("image1").Child(key).SetValueAsync(new float[] {0, 0, 0});
+        string key = reference.Child(imageText.text).Push().Key;
+        reference.Child(imageText.text).Child(key).SetValueAsync(new float[] {0.1f, 0, 0});
+        testFirebase(key);
 
-        key = reference.Child("image1").Push().Key;
-        reference.Child("image1").Child(key).SetValueAsync(new float[] { 0.1f, 0, 0 });
+        key = reference.Child(imageText.text).Push().Key;
+        reference.Child(imageText.text).Child(key).SetValueAsync(new float[] { 0, 0.1f, 0 });
+        testFirebase(key);
 
-        key = reference.Child("image1").Push().Key;
-        reference.Child("image1").Child(key).SetValueAsync(new float[] { 0, 0.1f, 0 });
+        key = reference.Child(imageText.text).Push().Key;
+        reference.Child(imageText.text).Child(key).SetValueAsync(new float[] { 0, 0, 0.1f });
+        testFirebase(key);
 
-        key = reference.Child("image1").Push().Key;
-        reference.Child("image1").Child(key).SetValueAsync(new float[] { 0, 0, 0.1f });
+        key = reference.Child(imageText.text).Push().Key;
+        reference.Child(imageText.text).Child(key).SetValueAsync(new float[] { 0.1f, 0.1f, 0.1f });
+        testFirebase(key);
+
     }
 
     public void PullDatabase() {
         //reference.Child("hi").Child("AudioList").SetValueAsync(AudioList);
+        //updating = true;
         FirebaseDatabase.DefaultInstance
-          .GetReference("image1")
+                        .GetReference(imageText.text)
           .GetValueAsync().ContinueWith(task => {
               if (task.IsFaulted)
               {
-                  // Handle the error...
+                  error = "Error!";
               }
               else if (task.IsCompleted)
               {
                   DataSnapshot snapshot = task.Result;
-                  DataSnapshot child = snapshot.Child(key);
                   foreach (DataSnapshot c in snapshot.Children)
                   {
-
-
-                      long value0 = (long) c.Child("0").Value;
-                      long value1 = (long) c.Child("1").Value;
-                      long value2 = (long) c.Child("2").Value;
-                      float float0 = (float) value0;
-                      Debug.Log(float0);
+                      double value0 = (double) c.Child("0").Value;
+                      double value1 = (double) c.Child("1").Value;
+                      double value2 = (double) c.Child("2").Value;
+                      positionsList.Add(new float[] { (float)value0, (float)value1, (float)value2 });
+                      //positionsList.Add(new long[] { value0, value1, value2 });
+                      keysList.Add(c.Key);
                       //text.text += ", " + value0;
-                      
                   }
+                  updating = true;
               }
           });
+
     }
 
     public void StartRecord() {

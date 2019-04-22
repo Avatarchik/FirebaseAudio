@@ -47,6 +47,13 @@ MonoBehaviour:
   Sphere: {fileID: 6171348713392481242}
   MusicClip: {fileID: 8300000, guid: be35ed7e37b88438ea19a96382136d5d, type: 3}
   MusicSource: {fileID: 6190821299602444607}
+  position:
+  - 0
+  - 0
+  - 0
+  first: 0
+  spheresList: []
+  text: {fileID: 0}
 --- !u!1 &829617065899424829
 GameObject:
   m_ObjectHideFlags: 0
@@ -275,12 +282,12 @@ GameObject:
   m_Component:
   - component: {fileID: 5831344584521859009}
   m_Layer: 0
-  m_Name: sphere
+  m_Name: AudioFire
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &5831344584521859009
 Transform:
   m_ObjectHideFlags: 0

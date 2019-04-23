@@ -17,6 +17,7 @@ public class FirebaseButton : MonoBehaviour
     public AudioClip audioClipFromDB;
     public Text text;
     public Text uploading;
+
     public Text downloading;
     public Text imageText;
     public Text dataText;
@@ -25,11 +26,21 @@ public class FirebaseButton : MonoBehaviour
     private FirebaseStorage storage;
     private StorageReference audio_ref;
     private StorageReference storage_ref;
-    private float[] floatFileContents;
-    private bool updating = false;
+    private bool updating;
+
+    private bool updatingPosition = false;
+    private bool updatingAudio = false;
+    private bool updatingAll = false;
+    private bool updatingAllFirst = false;
+    private bool updatingAllDone = false;
+
     private List<float[]> positionsList = new List<float[]>();
+    private List<float[]> audioList = new List<float[]>();
     private List<string> keysList = new List<string>();
     private string error = "";
+    private float[] position;
+    private float[] audioData;
+    private string imageNameForGetAll;
 
 
 
@@ -54,6 +65,7 @@ public class FirebaseButton : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        /*
         if (updating) {
             dataText.text += error;
             for (int i = 0; i < keysList.Count; i++) {
@@ -62,8 +74,174 @@ public class FirebaseButton : MonoBehaviour
             }
             updating = false;
         }
+        */
+        if (keysList.Count == audioList.Count && updatingAll) {
+            updatingAllDone = true;
+        }
+
+        if (updatingAudio) {
+
+
+            updatingAudio = false;
+        }
+
+        if (updatingPosition) {
+
+
+            updatingPosition = false;
+        }
+
+        if (updatingAllFirst)
+        {
+            GetAllAudio(imageNameForGetAll);
+            updatingAllFirst = false;
+            updatingAll = true;
+        }
+
+        if (updatingAllDone)
+        {
+            updatingAllDone = false;
+            updatingAll = false;
+        }
 
     }
+
+    public void GetAudioAndPosition(string key, string imageName)
+    {
+        FirebaseDatabase.DefaultInstance
+                        .GetReference(imageName)
+          .GetValueAsync().ContinueWith(task => {
+              if (task.IsFaulted)
+              {
+                  error = "Error!";
+              }
+              else if (task.IsCompleted)
+              {
+                  DataSnapshot snapshot = task.Result;
+                  DataSnapshot c = snapshot.Child(key);
+                  double value0 = (double)c.Child("0").Value;
+                  double value1 = (double)c.Child("1").Value;
+                  double value2 = (double)c.Child("2").Value;
+                  position = new float[] { (float)value0, (float)value1, (float)value2 };
+                  updatingPosition = true;
+              }
+          });
+
+        byte[] fileContents = { };
+        const long maxAllowedSize = 34008512;
+
+        audio_ref = storage_ref.Child(key);
+        audio_ref.GetBytesAsync(maxAllowedSize).ContinueWith((Task<byte[]> task) => {
+            if (task.IsFaulted || task.IsCanceled)
+            {
+                Debug.Log("Downloading Failed");
+                Debug.Log(task.Exception.ToString());
+                // Uh-oh, an error occurred!
+            }
+            else
+            {
+
+                fileContents = task.Result;
+                audioData = new float[fileContents.Length / 4];
+                System.Buffer.BlockCopy(fileContents, 0, audioData, 0, fileContents.Length);
+                updatingAudio = true;
+            }
+        });
+    }
+
+    public void SendAudioAndPosition(string imageName, float[] audio, float[] position) {
+        string key = reference.Child(imageText.text).Push().Key;
+        reference.Child(imageName).Child(key).SetValueAsync(position);
+        SendAudio(key, audio);
+    }
+
+    public void SendAudioAndPosition(string key, string imageName, float[] audio, float[] position)
+    {
+        reference.Child(imageName).Child(key).SetValueAsync(position);
+        SendAudio(key, audio);
+    }
+
+
+    private void SendAudio(string key, float[] audio)
+    {
+        //Using the Buffer solution
+        audio_ref = storage_ref.Child(key);
+        byte[] byteSamples = new byte[audioClipFromDB.samples * 4];
+
+        System.Buffer.BlockCopy(audio, 0, byteSamples, 0, byteSamples.Length);
+        audio_ref.PutBytesAsync(byteSamples)
+          .ContinueWith((Task<StorageMetadata> task) => {
+              if (task.IsFaulted || task.IsCanceled)
+              {
+                  //audioSource.Play();
+                  Debug.Log("Uploading Failed");
+                  Debug.Log(task.Exception.ToString());
+
+                  // Uh-oh, an error occurred!
+              }
+              else
+              {
+                  Debug.Log("Upload Success");
+                  Firebase.Storage.StorageMetadata metadata = task.Result;
+                  string download_url = metadata.Reference.GetDownloadUrlAsync().ToString();
+
+              }
+          });
+    }
+
+    public void GetAllAudiosAndPositions(string imageName) {
+        positionsList.Clear();
+        keysList.Clear();
+        audioList.Clear();
+        FirebaseDatabase.DefaultInstance
+                        .GetReference(imageName)
+          .GetValueAsync().ContinueWith(task => {
+              if (task.IsFaulted)
+              {
+                  error = "Error!";
+              }
+              else if (task.IsCompleted)
+              {
+                  DataSnapshot snapshot = task.Result;
+                  foreach (DataSnapshot c in snapshot.Children)
+                  {
+                      double value0 = (double)c.Child("0").Value;
+                      double value1 = (double)c.Child("1").Value;
+                      double value2 = (double)c.Child("2").Value;
+                      positionsList.Add(new float[] { (float)value0, (float)value1, (float)value2 });
+                      keysList.Add(c.Key);
+                  }
+                  updatingAll = true;
+                  imageNameForGetAll = imageName;
+              }
+          });
+    }
+
+    private void GetAllAudio(string imageName) {
+        byte[] fileContents = { };
+        const long maxAllowedSize = 34008512;
+        foreach (string key in keysList) {
+            audio_ref = storage_ref.Child(key);
+            audio_ref.GetBytesAsync(maxAllowedSize).ContinueWith((Task<byte[]> task) => {
+                if (task.IsFaulted || task.IsCanceled)
+                {
+                    Debug.Log("Downloading Failed");
+                    Debug.Log(task.Exception.ToString());
+                    // Uh-oh, an error occurred!
+                }
+                else
+                {
+
+                    fileContents = task.Result;
+                    float[] newAudioData = new float[fileContents.Length / 4];
+                    System.Buffer.BlockCopy(fileContents, 0, audioData, 0, fileContents.Length);
+                    audioList.Add(newAudioData);
+                }
+            });
+        }
+    }
+
+
 
     public void testFirebase(string key)
     {
@@ -120,9 +298,9 @@ public class FirebaseButton : MonoBehaviour
 
                 fileContents = task.Result;
                 Debug.Log("Finished downloading!");
-                floatFileContents = new float[fileContents.Length / 4];
+                audioData = new float[fileContents.Length / 4];
                 Debug.Log("1");
-                System.Buffer.BlockCopy(fileContents, 0, floatFileContents, 0, fileContents.Length);
+                System.Buffer.BlockCopy(fileContents, 0, audioData, 0, fileContents.Length);
                 //audioSource.Play();
                 Debug.Log("2");
                 updating = true;
@@ -160,8 +338,8 @@ public class FirebaseButton : MonoBehaviour
         //audioSource.Play();
         Debug.Log("4");
         if(updating) {
-            audioSource.clip.SetData(floatFileContents, 0);
-            updating = false;
+            audioSource.clip.SetData(audioData, 0);
+            updatingAudio = false;
         }
         Debug.Log("5");
         audioSource.Play();
@@ -177,7 +355,7 @@ public class FirebaseButton : MonoBehaviour
         }
         */
         Debug.Log("3");
-        audioSource.clip.SetData(floatFileContents, 0);
+        audioSource.clip.SetData(audioData, 0);
         Debug.Log("4");
         audioSource.Play();
     } 
@@ -240,5 +418,7 @@ public class FirebaseButton : MonoBehaviour
         }
 
     }
+
+
 
 }

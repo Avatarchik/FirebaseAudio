@@ -55,13 +55,17 @@ namespace GoogleARCore.Examples.AugmentedImage
         /// <summary>
         /// A model for the lower left corner of the frame to place when an image is detected.
         /// </summary>
-        public GameObject Sphere;
+        //public GameObject Sphere;
+        public AudioFire AudioFirePrefab;
+        public List<GameObject> spheresList;
+        public List<AudioFire> fireList;
+        public List<string> keysList;
 
         public AudioClip MusicClip;
         public AudioSource MusicSource;
         public float[] position = new float[] { 0, 0, 0 };
         public bool first = false;
-        public List<GameObject> spheresList;
+
         private Anchor anchor;
         public List<float[]> positionsList;
         public Text text;
@@ -79,7 +83,8 @@ namespace GoogleARCore.Examples.AugmentedImage
             float y = 0.2f;
             float z = 0.2f;
             //Destroy(Sphere);
-            for (int i = 0; i < 3; i++) {
+            for (int i = 0; i < 3; i++)
+            {
                 /*
                 GameObject s = (GameObject)Instantiate(Sphere, anchor.transform);
                 s.transform.localPosition =
@@ -88,6 +93,7 @@ namespace GoogleARCore.Examples.AugmentedImage
                 s.SetActive(true);
                 */
 
+                /*
                 GameObject s2 = (GameObject)Instantiate(Sphere, anchor.transform);
                 s2.transform.localPosition =
                           (x * Vector3.right) + (y * Vector3.forward) +
@@ -97,9 +103,18 @@ namespace GoogleARCore.Examples.AugmentedImage
                 z += 0.1f;
                 s2.SetActive(true);
                 spheresList.Add(s2);
-
+                */
+                AudioFire s2 = (AudioFire)Instantiate(AudioFirePrefab, anchor.transform);
+                s2.gameObject.transform.localPosition =
+                          (x * Vector3.right) + (y * Vector3.forward) +
+                          (z * Vector3.down);
+                x += 0.1f;
+                y += 0.1f;
+                z += 0.1f;
+                s2.SetActive(true);
+                spheresList.Add(s2.gameObject);
+                fireList.Add(s2);
             }
-            text.text += "hehe ";
 
         }
 
@@ -120,32 +135,53 @@ namespace GoogleARCore.Examples.AugmentedImage
 
                 for (int i = sCount - 3; i < pCount; i++) 
                 {
+                    /*
                     GameObject s = (GameObject)Instantiate(Sphere, anchor.transform);
                     s.transform.localPosition =
                               (positionsList[i][0] * Vector3.right) + (positionsList[i][1] * Vector3.forward) +
                               (positionsList[i][2] * Vector3.down);
                     spheresList.Add(s);
                     s.SetActive(true);
+                    */
+                    AudioFire s = (AudioFire)Instantiate(AudioFirePrefab, anchor.transform);
+                    s.Key = keysList[i];
+                    s.gameObject.transform.localPosition =
+                              (positionsList[i][0] * Vector3.right) + (positionsList[i][1] * Vector3.forward) +
+                              (positionsList[i][2] * Vector3.down);
+                    spheresList.Add(s.gameObject);
+                    s.SetActive(true);
+                   
                 }
 
             }
 
+            /*
             Sphere.transform.localPosition =
                       (1 * Vector3.left) + (1 * Vector3.forward) +
                       (1 * Vector3.down);
 
             Sphere.SetActive(false);
+            */
 
-            text.text = positionsList[0][0] + "" + positionsList[0][1] + "" + positionsList[0][2] + "" + positionsList.Count + ", " + spheresList.Count;
+            text.text = positionsList.Count + ", " + spheresList.Count + ", " + fireList.Count;
            
 
         }
 
         public void Destroy()
         {
+
             foreach (GameObject s in spheresList) {
                 Destroy(s);
             }
+
+            foreach (AudioFire f in fireList)
+            {
+                Destroy(f);
+            }
+            //keysList.Clear();
+            //spheresList.Clear();
+            //fireList.Clear();
             //spheresList.RemoveRange(0, spheresList.Count);
         }
 

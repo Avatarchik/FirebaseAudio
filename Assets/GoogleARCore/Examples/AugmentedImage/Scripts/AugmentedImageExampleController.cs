@@ -66,7 +66,11 @@ namespace GoogleARCore.Examples.AugmentedImage
         //private StorageReference audio_ref;
         private List<float[]> positionsList = new List<float[]>();
         private List<GameObject> spheresList = new List<GameObject>();
-        private string curr = "";
+        private List<AudioFire> fireList = new List<AudioFire>();
+        private List<string> keysList = new List<string>();
+        private string currKey = "";
+       
+        private string currImage = "";
 
         public void Start()
         {
@@ -131,7 +135,51 @@ namespace GoogleARCore.Examples.AugmentedImage
                 AugmentedImageVisualizer visualizer = null;
                 //Camera.current;
                 m_Visualizers.TryGetValue(image.DatabaseIndex, out visualizer);
-                if (image.TrackingState == TrackingState.Tracking) {
+                if (image.TrackingState == TrackingState.Tracking && currImage != image.Name)
+                {
+                    currImage = image.Name;
+                    imageText.text = image.Name;
+                    //imageText.text = "image" + image.Name;
+                    visualizer.Destroy();
+                    m_Visualizers.Clear();
+                    GameObject.Destroy(visualizer.gameObject);
+
+                    float halfWidth = image.ExtentX / 2;
+                    float halfHeight = image.ExtentZ / 2;
+                    Anchor anchor = image.CreateAnchor(image.CenterPose);
+
+                    visualizer = (AugmentedImageVisualizer)Instantiate(
+                        AugmentedImageVisualizerPrefab, anchor.transform);
+                    visualizer.Image = image;
+                    visualizer.position = new float[] { 0.1f, 0.1f, 0.1f };
+                    visualizer.text = text;
+                    visualizer.positionsList = positionsList;
+                    visualizer.spheresList = spheresList;
+                    visualizer.fireList = fireList;
+                    visualizer.MusicClip = MusicClip;
+                    m_Visualizers.Add(image.DatabaseIndex, visualizer);
+
+                    FirebaseDatabase.DefaultInstance
+                      .GetReference("audio")
+                      .GetValueAsync().ContinueWith(task => {
+                          if (task.IsFaulted)
+                          {
+                              // Handle the error...
+                          }
+                          else if (task.IsCompleted)
+                          {
+                              DataSnapshot snapshot = task.Result;
+                              DataSnapshot imageSnapshot = snapshot.Child(currImage);
+                              foreach (DataSnapshot c in imageSnapshot.Children)
+                              {
+                                  double value0 = (double)c.Child("0").Value;
+                                  double value1 = (double)c.Child("1").Value;
+                                  double value2 = (double)c.Child("2").Value;
+                                  positionsList.Add(new float[] { (float)value0, (float)value1, (float)value2 });
+                                  keysList.Add(c.Key);
+                              }
+                          }
+                      });
 
                 }
                 if (image.TrackingState == TrackingState.Tracking && visualizer == null)
@@ -148,11 +196,18 @@ namespace GoogleARCore.Examples.AugmentedImage
                     visualizer.text = text;
                     visualizer.positionsList = positionsList;
                     visualizer.spheresList = spheresList;
+                    visualizer.fireList = fireList;
+                    visualizer.keysList = keysList;
                     visualizer.MusicClip = MusicClip;
                     m_Visualizers.Add(image.DatabaseIndex, visualizer);
-                    if (curr != image.Name) {
+                    if (currImage != image.Name) {
                         visualizer.Destroy();
+                        m_Visualizers.Clear();
+                        GameObject.Destroy(visualizer.gameObject);
+                        //GameObject.Destroy(visualizer.gameObject);
                     }
+                    currImage = image.Name;
+                    imageText.text = image.Name;
 
                     // You can convert it back to an array if you would like to
 
@@ -172,13 +227,13 @@ namespace GoogleARCore.Examples.AugmentedImage
                                   double value0 = (double) c.Child("0").Value;
                                   double value1 = (double) c.Child("1").Value;
                                   double value2 = (double) c.Child("2").Value;
-                                  positionsList.Add(new float[] { (float) value0, (float) value1, (float) value2 }); 
+                                  positionsList.Add(new float[] { (float) value0, (float) value1, (float) value2 });
+                                  keysList.Add(c.Key);
                               }
                           }
                       });
-                    curr = image.Name;
-                    text.text = "hello";
-                    imageText.text = "image" + image.Name;
+
+
 
                     //text.text = text.text + " hello";
                     foreach (var device in Microphone.devices)
@@ -189,11 +244,12 @@ namespace GoogleARCore.Examples.AugmentedImage
                     //}
 
 
-                }
+                } 
                 else if (image.TrackingState == TrackingState.Stopped && visualizer != null)
                 {
                     m_Visualizers.Remove(image.DatabaseIndex);
                     GameObject.Destroy(visualizer.gameObject);
+                    //visualizer.Destroy();
                 }
             }
             // Show the fit-to-scan overlay if there are no images that are Tracking.

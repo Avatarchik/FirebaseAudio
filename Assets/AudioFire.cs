@@ -22,4 +22,8 @@ public class AudioFire : MonoBehaviour
         this.gameObject.SetActive(b);
     }
 
+    public string RayCast() {
+        return Key;
+    }
+
 }

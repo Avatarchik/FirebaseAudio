@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea1208cb4bfc946f7aa1d7b5348cb086, type: 3}
+  m_Name: New Database
+  m_EditorClassIdentifier: 
+  m_Images:
+  - Name: AnimalWhisperer
+    Width: 0
+    Quality: 100
+    TextureGUID: 598c14134a761480997037aab2707a93
+  - Name: SnowFox
+    Width: 0
+    Quality: 80
+    TextureGUID: ffdb1c158255248b4b25c2fbd539caa3
+  - Name: TheGiver2
+    Width: 0
+    Quality: 70
+    TextureGUID: da184ecf8963342b8b49f0ccb8acb28c
+  - Name: TheStoryteller
+    Width: 0
+    Quality: 15
+    TextureGUID: ae0ee22d457cc4252b76348fde00fd11
+  m_RawData: 
+  m_IsRawDataDirty: 1
+  m_CliVersion: 1.2
